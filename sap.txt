@@ -1,0 +1,82 @@
+const int esize = 2e6;
+const int vsize = 2e5;
+const int inf = 1e9;
+int to[esize], vol[esize], nxt[esize];
+int lst[vsize];
+int top;
+int s, t;
+int dep[vsize];
+int gap[vsize];
+void bfs(){
+	int qu[vsize];
+	memset(dep, 0xff, sizeof(dep));
+	memset(gap, 0, sizeof(gap));
+	int f = 0, r = 0;
+	qu[r++] = t;
+	dep[t] = 0;
+	while (f != r){
+		int u = qu[f++];
+		gap[dep[u]]++; if (f == vsize)  f = 0;
+		for (int p = lst[u]; p >= 0; p = nxt[p]){
+			int v = to[p];
+			if (vol[p] == 0 && dep[v] == -1){
+				qu[r++] = v; if (r == vsize)r = 0;
+				dep[v] = dep[u] + 1;
+			}
+		}
+	}
+}
+int sap(){
+	bfs();
+	int cur[vsize], stk[vsize], top = -1;
+	memcpy(cur, lst, sizeof(cur));
+	int fw = inf, u = s, cnt = 0;
+	while (dep[s]<inf){
+		if (u == t){
+			int p;
+			while (top >= 0){
+				p = stk[top--];
+				vol[p] -= fw;
+				vol[p ^ 1] += fw;
+			}
+			cnt += fw;
+			u = s, fw = inf;
+			continue;
+		}
+		if (dep[u]>0&&gap[dep[u] - 1] == 0) break;
+		int p = cur[u];
+		while (p >= 0 && (dep[to[p]] != dep[u] - 1 || vol[p] == 0)){
+			p = nxt[p];
+		}
+		if (p >= 0){
+			stk[++top] = p;
+			cur[u] = p;
+			u = to[p];
+			fw = min(fw, vol[p]);
+		}
+		else{
+			int x = -1, d = inf;
+			for (int p = lst[u]; p >= 0; p = nxt[p]){
+				if (dep[to[p]] < d&&vol[p]>0)
+					x = p, d = dep[to[p]];
+			}
+			--gap[dep[u]];
+			dep[u] = d + 1;
+			if (dep[u]<vsize)++gap[dep[u]];
+			cur[u] = x;
+			u = top >= 0 ? to[stk[top--] ^ 1] : s;
+		}
+	}
+	return cnt;
+}
+void add(int u, int v, int w){
+	++top;
+	nxt[top] = lst[u];
+	lst[u] = top;
+	to[top] = v;
+	vol[top] = w;
+}
+void adde(int u, int v, int w){
+	add(u, v, w);
+	add(v, u, 0);
+}

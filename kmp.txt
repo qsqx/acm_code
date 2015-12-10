@@ -1,0 +1,47 @@
+void kmp_table(int *next,char *word){
+	int pos = 2;
+	int cnd = 0;
+	next[0] = -1;
+	next[1] = 0;
+	int len = strlen(word);
+	while (pos <= len){
+		if (word[pos - 1] == word[cnd]){
+			++cnd;
+			next[pos] = cnd;
+			++pos;
+		}
+		else if (cnd>0){
+			cnd = next[cnd];
+		}
+		else{
+			next[pos] = 0;
+			++pos;
+		}
+	}
+}
+void kmp_search(int *next,char *w,char *s,vector <int>&res){
+	int m = 0;
+	int i = 0;
+	int len = strlen(s);
+	int wlen = strlen(w);
+	while (m + i < len){
+		if (s[m + i] == w[i]){
+			++i;
+			if (i == wlen){
+				res.push_back(m);
+				m += i - next[i];
+				i = next[i];
+			}
+		}
+		else{
+			if (next[i] > -1){
+				m += i - next[i];
+				i = next[i];
+			}
+			else{
+				i = 0;
+				++m;
+			}
+		}
+	}
+}

@@ -1,0 +1,64 @@
+struct Node{
+	Node *s[2];
+	int v, w, pos, mk, cnt;
+	//ll r[5], p;
+	//ll getv(int i = 0){ return r[(p % 5 + i + 5) % 5]; }
+	Node *link(int w, Node *p){ s[w] = p; return this; }
+	void init(){ memset(this, 0, sizeof(*this)); w = rand(); cnt = 1; }
+	void push();
+	void update();
+};
+struct __HNIUNO{
+	static const int size = 1e6 + 5;
+	Node spc[size];
+	int p;
+	void reset(){ p = 0; }
+	Node *nloc(){ spc[p].init(); return spc + (p++); }
+}nodes;
+void rot(Node *&p, int lr){
+	Node *q = p->s[!lr];
+	p->push();
+	q->push();
+	lr ? (q->link(1, p->link(0, q->s[1]))) : (q->link(0, p->link(1, q->s[0])));
+	p->update();
+	q->update();
+	p = q;
+}
+void insert(Node *&p, int v, int pos = 1){
+	if (p == NULL){ p = nodes.nloc(); p->v = v; p->pos = pos; p->update(); return; }
+	if (p->v == v)return;
+	p->push();
+	if (v < p->v){
+		insert(p->s[0], v, pos);
+		//p->mk++;
+		//p->s[0]->mk--;
+	}
+	else{
+		insert(p->s[1], v, pos + 1 + (p->s[0] ? p->s[0]->cnt : 0));
+	}
+	p->update();
+	int w = v > p->v;
+	if (p->s[w]->w < p->w)rot(p, !w);
+}
+void del(Node *&p){
+	p->push();
+	if (p->s[0] == NULL){ p = p->s[1]; return; }
+	if (p->s[1] == NULL){ p = p->s[0]; return; }
+	p->s[0]->w < p->s[1]->w ? (rot(p, 1), del(p->s[1]), p->update()) : (rot(p, 0), del(p->s[0]), p->update());
+}
+void del(Node *&p, int v){
+	if (p == NULL)return;
+	p->push();
+	if (p->v == v){ if (p->s[1])p->s[1]->mk--; del(p); }
+	else{
+		if (v < p->v){
+			//p->mk--;
+			//if (p->s[0]) p->s[0]->mk++;
+			del(p->s[0], v);
+		}
+		else{
+			del(p->s[1], v);
+		}
+		p->update();
+	}
+}

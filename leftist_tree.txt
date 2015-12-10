@@ -1,0 +1,14 @@
+int s[2][100005] = {};
+int dis[100005] = {};
+pair <ll, pii> dt[100005];
+int merge(int l,int r){
+	if (l == 0 || r == 0)return l ? l : r;
+	if (dt[l] < dt[r])swap(l, r);
+	s[1][l] = merge(s[1][l], r);
+	if (s[1][l]) dis[l] = dis[s[1][l]] + 1;
+	else dis[l] = 1;
+	if (dis[s[0][l]] < dis[s[1][l]]){
+		swap(s[0][l], s[0][r]);
+	}
+	return l;
+}
